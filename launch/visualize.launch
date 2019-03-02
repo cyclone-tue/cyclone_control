@@ -1,0 +1,12 @@
+<launch>
+
+    <!--<group ns="cyclone">
+        <node pkg="cyclone_test" name="talker" type="talker.py"/>
+    </group>-->
+    <node pkg="mavros_extras" name="visualize" type="copter_visualization">
+        <remap from="local_setpoint" to="/mavros/setpoint_position/local"/>
+        <remap from="local_position" to="/mavros/local_position/pose"/>
+        <param name="fixed_frame_id" value="local_origin_ned" type="string"/>
+        <param name="child_frame_id" value="base_link" type="string" />
+    </node>
+</launch>
