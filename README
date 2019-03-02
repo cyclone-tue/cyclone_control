@@ -1,0 +1,28 @@
+#Cyclone_control
+
+This is a git repository containing the code for the cyclone_control ROS package.
+
+This package contains the different nodes and launch files that are used to control the drone.
+The nodes currently rely on a mavros node called *mavros* to be running connected to the same master.
+
+Currently these nodes are created:
+- Control
+
+The control node takes in messages on the **path** topic and starts executing them on the drone.
+It does this by listening for local position data and tracking the progress of the path while flying from point to point.
+This node also updates the tf graph. Specifically it sets the relation between **base_link** and **map**.
+
+To send a path to the control node send a `nav_msgs/Path` message to the `path` topic. Only the points and reference frame are used.
+
+**TODO:** include yaw information coming from the path specification when flying.
+
+##Starting the node
+Make sure you have mavros a mavros node running. A launch file called `mavros.launch` is included for ease of use.
+Start mavros running the following command in a terminal:
+`roslaunch mavros.launch fcu_url:=udp://:14551@`
+This command assumes that there is a udp mavlink connection available port 14551.
+
+Start the control node by running the following command in a terminal:
+`rosrun cyclone_control control`
+You might have to source your development environment before this works. Do this by running:
+`. ./devel.bash` from your catkin_ws directory.
