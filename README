@@ -26,3 +26,5 @@ Start the control node by running the following command in a terminal:
 `rosrun cyclone_control control`
 You might have to source your development environment before this works. Do this by running:
 `. ./devel.bash` from your catkin_ws directory.
+
+For more information about the ROS architecture [ROS](http://wiki.ros.org)
