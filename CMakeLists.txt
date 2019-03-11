@@ -7,7 +7,7 @@ project(cyclone_control)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs tf message_generation)
+find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs tf message_generation interactive_markers)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -101,7 +101,7 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs tf message_generat
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES cyclone_control
-  CATKIN_DEPENDS roscpp rospy std_msgs tf message_runtime
+  CATKIN_DEPENDS roscpp rospy std_msgs tf message_runtime interactive_markers
 #  DEPENDS system_lib
 )
 
@@ -118,8 +118,10 @@ include_directories(
 
 #Create executable
 add_executable(control src/control.cpp)
+add_executable(test_path src/interactive_path.cpp src/TargetMarker.cpp)
 #Link libraries
 target_link_libraries(control ${catkin_LIBRARIES})
+target_link_libraries(test_path ${catkin_LIBRARIES})
 #Add generated messages
 #add_dependencies(control )
 

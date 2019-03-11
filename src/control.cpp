@@ -2,6 +2,8 @@
 #include "geometry_msgs/PoseStamped.h"
 #include <nav_msgs/Path.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_datatypes.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include "../include/cyclone_control/control.h"
 
@@ -10,10 +12,10 @@ void posCallback(const geometry_msgs::PoseStamped::ConstPtr& position){
     ROS_INFO("I am at: [%f, %f, %f]", position->pose.position.x, position->pose.position.y, position->pose.position.z);
     broadcastTransform(position);
     if(currentPose == nullptr){
-        currentPose = new geometry_msgs::PoseStamped();
-        *currentPose = *position;
+        currentPose = new tf::Stamped<tf::Pose>();
+        tf::poseStampedMsgToTF(*position, *currentPose);
     }else{
-        *currentPose = *position;
+        tf::poseStampedMsgToTF(*position, *currentPose);
     }
     //ROS_INFO("Current pose stored as: [%f, %f, %f]", currentPose->pose.position.x, currentPose->pose.position.y, currentPose->pose.position.z);
 
@@ -31,9 +33,24 @@ void broadcastTransform(const geometry_msgs::PoseStamped::ConstPtr &position) {
 
 void pathCallback(const nav_msgs::Path::ConstPtr &navigationPath) {
     path.clear();
-    for (geometry_msgs::PoseStamped pose: navigationPath->poses){
-        tf::Stamped<tf::Point> point(tf::Point(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z), pose.header.stamp, pose.header.frame_id);
-        path.emplace_back(point);
+    tf::TransformListener pathListener;
+
+    tf::StampedTransform transform;
+    try{
+        pathListener.waitForTransform("map", navigationPath->header.frame_id, navigationPath->header.stamp, ros::Duration(1.0));
+        pathListener.lookupTransform("map", navigationPath->header.frame_id, navigationPath->header.stamp, transform);
+    }catch (tf::TransformException ex){
+        ROS_ERROR("%s", ex.what());
+        ROS_ERROR("Could not update path. No valid tranform from %s to map", navigationPath->header.frame_id.c_str());
+        return;
+    }
+
+
+    for (const geometry_msgs::PoseStamped &pose: navigationPath->poses){//Transform every point to world space and add to the path list.
+        tf::Stamped<tf::Point> point(tf::Vector3(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z), navigationPath->header.stamp, navigationPath->header.frame_id);
+        tf::Stamped<tf::Point> mapPoint;
+        pathListener.transformPoint("map", point, mapPoint);
+        path.emplace_back(mapPoint);
     }
     pathIterator = path.begin();
     targetSet = false;
@@ -71,7 +88,7 @@ int main(int argc, char **argv){
     while (ros::ok()){
         if(currentPose != nullptr && ready){
             tf::Stamped<tf::Point> target = *pathIterator;
-            tf::Point currentPosition(currentPose->pose.position.x, currentPose->pose.position.y, currentPose->pose.position.z);
+            tf::Point currentPosition = currentPose->getOrigin();
             if((target - currentPosition).length() < 1 && pathIterator < path.end()-1){
                 pathIterator++;
                 targetSet = false;

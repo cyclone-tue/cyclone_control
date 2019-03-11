@@ -9,7 +9,7 @@
 
 std::vector<tf::Stamped<tf::Point>> path;
 std::vector<tf::Stamped<tf::Point>>::iterator pathIterator;
-geometry_msgs::PoseStamped* currentPose = nullptr;
+tf::Stamped<tf::Pose>* currentPose = nullptr;
 bool ready = false;
 bool targetSet = false;
 
