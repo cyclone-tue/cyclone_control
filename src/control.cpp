@@ -9,7 +9,7 @@
 
 
 void posCallback(const geometry_msgs::PoseStamped::ConstPtr& position){
-    ROS_INFO("I am at: [%f, %f, %f]", position->pose.position.x, position->pose.position.y, position->pose.position.z);
+    //ROS_INFO("I am at: [%f, %f, %f]", position->pose.position.x, position->pose.position.y, position->pose.position.z);
     broadcastTransform(position);
     if(currentPose == nullptr){
         currentPose = new tf::Stamped<tf::Pose>();
@@ -67,9 +67,9 @@ int main(int argc, char **argv){
     //Point path[];
 
     ros::NodeHandle n;
-    path.emplace_back(tf::Stamped<tf::Point>(tf::Vector3(5.0,0.0,5.0), ros::Time::now(), "map"));
-    path.emplace_back(tf::Stamped<tf::Point>(tf::Vector3(5.0,5.0,5.0), ros::Time::now(), "map"));
-    path.emplace_back(tf::Stamped<tf::Point>(tf::Vector3(5.0,5.0,10.0), ros::Time::now(), "map"));
+    //path.emplace_back(tf::Stamped<tf::Point>(tf::Vector3(5.0,0.0,5.0), ros::Time::now(), "map"));
+    //path.emplace_back(tf::Stamped<tf::Point>(tf::Vector3(5.0,5.0,5.0), ros::Time::now(), "map"));
+    //path.emplace_back(tf::Stamped<tf::Point>(tf::Vector3(5.0,5.0,10.0), ros::Time::now(), "map"));
 
     pathIterator = path.begin();
     ROS_INFO("Path lenght is: %ld", path.size());
@@ -86,10 +86,10 @@ int main(int argc, char **argv){
 
     ROS_INFO("Started Control node.");
     while (ros::ok()){
-        if(currentPose != nullptr && ready){
+        if(currentPose != nullptr && ready && !path.empty()){
             tf::Stamped<tf::Point> target = *pathIterator;
             tf::Point currentPosition = currentPose->getOrigin();
-            if((target - currentPosition).length() < 1 && pathIterator < path.end()-1){
+            if((target - currentPosition).length() < 0.25 && pathIterator < path.end()-1){
                 pathIterator++;
                 targetSet = false;
             }else{
